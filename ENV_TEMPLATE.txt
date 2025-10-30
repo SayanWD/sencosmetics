@@ -1,0 +1,48 @@
+# Скопируйте это содержимое в файл .env.local в корне проекта
+
+# Marketing & Analytics
+# ===================================
+
+# Google Tag Manager ID
+NEXT_PUBLIC_GTM_ID=
+
+# Facebook Pixel ID
+# Получить: https://business.facebook.com/events_manager
+# Формат: 16 цифр, например 1234567890123456
+NEXT_PUBLIC_FB_PIXEL_ID=
+
+# Google Analytics / Google Ads ID
+# Analytics: G-XXXXXXXXX | Ads: AW-XXXXXXXXX
+# Получить: https://analytics.google.com/ или https://ads.google.com/
+NEXT_PUBLIC_GTAG_ID=
+
+# Contact Form
+# ===================================
+
+# Email для получения заявок
+CONTACT_EMAIL=contact@sencosmetics.com
+
+# Email Service (опционально)
+# ===================================
+
+# Sendgrid
+# SENDGRID_API_KEY=
+# SENDGRID_FROM_EMAIL=noreply@sencosmetics.com
+
+# Resend
+# RESEND_API_KEY=
+
+# Database (опционально)
+# ===================================
+
+# Supabase (используйте значения из вашего проекта; не коммитить секреты)
+# NEXT_PUBLIC_SUPABASE_URL=https://ofsiusktlgasdjxbrmjj.supabase.co
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY
+# SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY (только server)
+
+# Other
+# ===================================
+
+# Node environment (автоматически устанавливается Vercel)
+# NODE_ENV=production
+

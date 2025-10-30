@@ -1,0 +1,32 @@
+{
+  "header": {
+    "brand": "Sencosmetics",
+    "nav": {
+      "home": "Главная",
+      "about": "О бренде",
+      "faq": "FAQ",
+      "contact": "Контакты"
+    }
+  },
+  "hero": {
+    "title": "Натуральный уход. Видимый результат.",
+    "cta": "Узнать больше"
+  },
+  "footer": {
+    "privacy": "Политика конфиденциальности",
+    "rights": "Все права защищены"
+  },
+  "forms": {
+    "newsletter": {
+      "email": "E‑mail",
+      "submit": "Подписаться"
+    },
+    "contact": {
+      "name": "Имя",
+      "subject": "Тема",
+      "message": "Сообщение",
+      "submit": "Отправить"
+    }
+  }
+}
+

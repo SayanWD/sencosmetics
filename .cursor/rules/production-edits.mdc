@@ -1,0 +1,18 @@
+---
+alwaysApply: false
+appliesWhen:
+  branches: ["main"]
+  prTargets: ["main"]
+---
+
+%% Production Edits (Conditional) %%
+
+# Stricter Requirements
+- Запрещены незадокументированные breaking changes.
+- Обязателен план отката и миграций (если есть БД).
+- Lighthouse/Web Vitals в бюджете.
+- A11y: axe — без serious/critical.
+
+# Process
+- Обновить CHANGELOG и Release Notes шаблоны.
+- Ссылки на `client/SPEC_TZ.md` с критериями приёмки.

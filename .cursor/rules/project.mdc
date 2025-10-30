@@ -1,0 +1,54 @@
+---
+alwaysApply: true
+---
+
+%% Project Rules (Cursor) %%
+
+# Purpose
+Стандартизировать работу ИИ‑ассистента в Cursor для выдачи production‑готового кода и снижения рисков.
+
+# Scope
+- Проект: Sencosmetics (Next.js + TypeScript, Vercel, Supabase)
+- Доккомплект: `documentation/` (обязательно учитывать)
+
+# Hard Constraints
+- Никаких секретов в коде/логах. ENV только через конфиг.
+- Никаких `any` в TypeScript. Явные типы функций.
+- Валидация данных через Zod (inputs/env).
+- UX/a11y обязательны (см. `documentation/UX_UI.md`).
+- Коммиты по Conventional Commits. Версии — SemVer/semantic-release.
+- Тесты обязательны для критичного кода (юнит/интеграция/E2E по необходимости).
+
+# Context Packing (для ИИ)
+- Минимизировать контекст до релевантных файлов (пути + краткие выдержки).
+- Прикладывать ссылки на: `AI_CODING.md`, `UX_UI.md`, `VERSIONING.md`, `client/SPEC_TZ.md`.
+- Разбивать большие задачи на подпункты (≤ 50 LOC на функцию), формировать acceptance criteria.
+
+# Edit Policy
+- Изменять только явно указанные файлы. Сохранять стиль, форматирование, импорты.
+- Новые файлы — с кратким описанием назначения вверху файла (комментарий).
+- Не удалять существующую функциональность без явного ТЗ.
+
+# Security
+- Не логировать PII/секреты. Маскировать идентификаторы.
+- Проверять ввод/контракты. RLS для БД, если применимо.
+
+# Performance/SEO
+- Бюджеты: LCP P75 < 2.5s, CLS < 0.1. Изображения (WebP/AVIF), code‑split.
+- Метатеги/OG/каноникал, sitemap/robots при необходимости.
+
+# CI/CD & Releases
+- Релизы через semantic-release, теги только на `main`.
+- CHANGELOG из коммитов. См. `CI_CD.md`, `VERSIONING.md`.
+
+# Do/Don't
+- DO: Инкрементальные правки, ранние возвраты, понятные имена, покрытие тестами.
+- DON'T: Масштабные рефакторинги без задач/согласования, отключение линтеров.
+
+# References
+- `documentation/AI_CODING.md`
+- `documentation/UX_UI.md`
+- `documentation/DEV_RULES.md`
+- `documentation/VERSIONING.md`
+- `documentation/CI_CD.md`
+- `documentation/client/`

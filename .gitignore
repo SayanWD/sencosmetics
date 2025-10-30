@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+.vercel/
+.turbo/
+
+# TypeScript
+*.tsbuildinfo
+
+# Env & secrets (never commit real secrets)
+.env
+.env.*
+!.env.example
+!.env.sample
+# Local dev envs
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# OS/Editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Tests/coverage/artifacts
+coverage/
+playwright-report/
+playwright/.cache/
+test-results/
+
+# Build caches
+.cache/
+
+# Supabase local artifacts
+supabase/.temp/
+supabase/.branches/
+
+# Misc
+dist/
+*.local.*
+
