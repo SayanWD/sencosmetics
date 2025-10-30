@@ -50,3 +50,6 @@ supabase/.branches/
 dist/
 *.local.*
 
+# Exclude internal docs from publication
+documentation/
+
