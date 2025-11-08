@@ -4,17 +4,22 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
+import Image from 'next/image'
 import { useUIStore } from '@/stores/ui-store'
 import { PrivacyPolicyModal } from './privacy-policy-modal'
 
 const surveySchema = z.object({
-  // Основные вопросы
-  question1: z.string().min(1, 'Пожалуйста, ответьте на вопрос'),
-  question2: z.string().min(1, 'Пожалуйста, ответьте на вопрос'),
-  question3: z.string().min(1, 'Пожалуйста, ответьте на вопрос'),
-  // Контактные данные
-  phone: z.string().min(10, 'Укажите корректный номер телефона'),
-  email: z.string().email('Укажите корректный email'),
+  // Вопросы — необязательные
+  question1: z.string().optional(),
+  question2: z.array(z.string()).optional().default([]),
+  question3: z.array(z.string()).optional().default([]),
+  question3_other: z.string().optional(),
+  question4: z.string().optional(),
+  question4_other: z.string().optional(),
+  // Контакты
+  name: z.string().optional(),
+  phone: z.string().regex(/^\+77\d{9}$/, 'Формат: +77XXXXXXXXX (9 цифр после +77)'),
+  email: z.string().email('Укажите корректный email').optional(),
   // Согласие
   consent: z.boolean().refine((val) => val === true, {
     message: 'Необходимо дать согласие на обработку персональных данных',
@@ -26,6 +31,8 @@ type SurveyFormData = z.infer<typeof surveySchema>
 export function SurveyModal() {
   const { isSurveyModalOpen, closeSurveyModal } = useUIStore()
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [step, setStep] = useState(1)
+  const totalSteps = 4
   const [errorMessage, setErrorMessage] = useState('')
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false)
 
@@ -34,6 +41,9 @@ export function SurveyModal() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    trigger,
+    setValue,
+    watch,
   } = useForm<SurveyFormData>({
     resolver: zodResolver(surveySchema),
   })
@@ -116,34 +126,41 @@ export function SurveyModal() {
     setIsSubmitted(false)
     setErrorMessage('')
     reset()
+    setStep(1)
     closeSurveyModal()
   }
 
   if (!isSurveyModalOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background rounded-xl shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4 bg-white/60 animate-in fade-in duration-200">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full h-full md:h-[92vh] md:w-[92vw] overflow-y-auto rounded-none md:rounded-2xl border border-black/10 shadow-2xl bg-white text-slate-900 animate-in slide-in-from-bottom-8 md:zoom-in-95 duration-300"
+      >
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Закрыть"
+          className="absolute top-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/80 text-secondary-foreground hover:bg-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+          aria-label="Выйти"
         >
           <svg
-            className="w-6 h-6"
+            className="w-5 h-5"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path d="M6 18L18 6M6 6l12 12"></path>
           </svg>
+          <span className="text-sm font-medium">Выйти</span>
         </button>
 
-        <div className="p-6 sm:p-8">
+        <div className="p-6 sm:p-10">
           {isSubmitted ? (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">✅</div>
@@ -158,11 +175,9 @@ export function SurveyModal() {
             <>
               <div className="mb-6">
                 <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-                  Помогите нам стать лучше
+                  Подбор ухода за кожей
                 </h2>
-                <p className="text-muted-foreground">
-                  Ответьте на несколько вопросов о выборе генератора
-                </p>
+                {/* Описание убрано по требованию */}
               </div>
 
               {errorMessage && (
@@ -172,182 +187,327 @@ export function SurveyModal() {
               )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Вопрос 1 */}
-                <div>
-                  <label
-                    htmlFor="question1"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    1. Для каких целей вам нужен генератор?{' '}
-                    <span className="text-destructive">*</span>
-                  </label>
-                  <select
-                    {...register('question1')}
-                    id="question1"
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                  >
-                    <option value="">Выберите вариант</option>
-                    <option value="home">Для дома (резервное питание)</option>
-                    <option value="construction">Для стройки</option>
-                    <option value="business">Для бизнеса</option>
-                    <option value="events">Для мероприятий</option>
-                    <option value="other">Другое</option>
-                  </select>
-                  {errors.question1 && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {errors.question1.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Вопрос 2 */}
-                <div>
-                  <label
-                    htmlFor="question2"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    2. Какая мощность вам необходима?{' '}
-                    <span className="text-destructive">*</span>
-                  </label>
-                  <select
-                    {...register('question2')}
-                    id="question2"
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                  >
-                    <option value="">Выберите вариант</option>
-                    <option value="under-3kw">До 3 кВт (освещение, холодильник)</option>
-                    <option value="3-5kw">3-5 кВт (дом, небольшой офис)</option>
-                    <option value="5-10kw">5-10 кВт (большой дом, котёл)</option>
-                    <option value="over-10kw">Более 10 кВт (коттедж, производство)</option>
-                    <option value="unknown">Не знаю, нужна консультация</option>
-                  </select>
-                  {errors.question2 && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {errors.question2.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Вопрос 3 */}
-                <div>
-                  <label
-                    htmlFor="question3"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    3. Какой бюджет вы планируете?{' '}
-                    <span className="text-destructive">*</span>
-                  </label>
-                  <select
-                    {...register('question3')}
-                    id="question3"
-                    className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                  >
-                    <option value="">Выберите вариант</option>
-                    <option value="under-50k">До 50 000 ₸</option>
-                    <option value="50-100k">50 000 - 100 000 ₸</option>
-                    <option value="100-200k">100 000 - 200 000 ₸</option>
-                    <option value="200-500k">200 000 - 500 000 ₸</option>
-                    <option value="over-500k">Более 500 000 ₸</option>
-                  </select>
-                  {errors.question3 && (
-                    <p className="mt-1 text-sm text-destructive">
-                      {errors.question3.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Разделитель */}
-                <div className="border-t border-border my-6"></div>
-
-                <div className="bg-primary/5 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
-                    Оставьте контакты для связи
-                  </h3>
-
-                  {/* Телефон */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-foreground mb-2"
-                    >
-                      Телефон <span className="text-destructive">*</span>
-                    </label>
-                    <input
-                      {...register('phone')}
-                      type="tel"
-                      id="phone"
-                      placeholder="+7 (999) 123-45-67"
-                      className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                    />
-                    {errors.phone && (
-                      <p className="mt-1 text-sm text-destructive">{errors.phone.message}</p>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-foreground mb-2"
-                    >
-                      Email <span className="text-destructive">*</span>
-                    </label>
-                    <input
-                      {...register('email')}
-                      type="email"
-                      id="email"
-                      placeholder="your@email.com"
-                      className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
-                    />
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Согласие */}
-                <div className="flex items-start gap-3">
+                {/* Прогресс */}
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">Шаг</span>
                   <input
-                    type="checkbox"
-                    id="consent"
-                    {...register('consent')}
-                    className="mt-1 w-4 h-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
+                    type="range"
+                    min={1}
+                    max={totalSteps}
+                    step={1}
+                    value={step}
+                    onChange={(e) => setStep(parseInt(e.target.value))}
+                    className="flex-1 accent-emerald-600"
+                    aria-label="Перемещение по шагам"
                   />
-                  <label htmlFor="consent" className="text-sm text-muted-foreground">
-                    Я даю согласие на{' '}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        setIsPrivacyModalOpen(true)
-                      }}
-                      className="text-primary hover:underline"
-                    >
-                      обработку персональных данных
-                    </button>
-                    {' '}в соответствии с политикой конфиденциальности
-                  </label>
+                  <span className="text-sm text-muted-foreground">{step}/{totalSteps}</span>
                 </div>
-                {errors.consent && (
-                  <p className="text-sm text-destructive">{errors.consent.message}</p>
+
+                {/* Вопрос 1 — список (radio list) с изображением справа */}
+                {step === 1 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300">
+                    <div>
+                      <p className="block text-sm font-medium text-foreground mb-3">
+                        1. Кому хотите подобрать уход? <span className="text-destructive">*</span>
+                      </p>
+                      <fieldset className="space-y-2">
+                        <legend className="sr-only">Кому подобрать уход</legend>
+                        {[
+                          { value: 'mom_for_teen', label: 'Я мама, хочу подобрать уход подростку' },
+                          { value: 'teen_self', label: 'Я подросток 10–17 лет, хочу подобрать уход себе' },
+                          { value: 'female_18_plus', label: 'Я девушка 18+, хочу подобрать уход себе' },
+                          { value: 'male_18_plus', label: 'Я парень 18+, хочу подобрать уход себе' },
+                        ].map((opt) => (
+                          <label key={opt.value} className="flex items-center gap-3 cursor-pointer rounded-lg border border-input bg-white px-4 py-3 hover:bg-white/80 transition">
+                            <input type="radio" value={opt.value} {...register('question1')} className="accent-primary" />
+                            <span className="text-sm font-medium">{opt.label}</span>
+                          </label>
+                        ))}
+                      </fieldset>
+                      {errors.question1 && (
+                        <p className="mt-2 text-sm text-destructive">{errors.question1.message}</p>
+                      )}
+                    </div>
+                    <div className="relative w-full h-56 sm:h-72 md:h-full rounded-xl overflow-hidden border border-white/30">
+                      <Image src="/images/home_image.jpg" alt="Sencosmetics продукт" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" />
+                    </div>
+                  </div>
                 )}
 
-                {/* Submit button */}
+                {/* Вопрос 2 — мультивыбор тип кожи */}
+                {step === 2 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300">
+                    <div>
+                      <p className="block text-sm font-medium text-foreground mb-3">
+                        2. Какой у вас тип кожи? <span className="text-destructive">*</span>
+                        <span className="block text-xs text-muted-foreground">Отметьте один или несколько вариантов</span>
+                      </p>
+                      <fieldset className="space-y-2">
+                        <legend className="sr-only">Тип кожи</legend>
+                        {[
+                          { value: 'normal', label: 'Нормальная' },
+                          { value: 'dry', label: 'Сухая' },
+                          { value: 'oily', label: 'Жирная' },
+                          { value: 'combination', label: 'Комбинированная' },
+                          { value: 'sensitive', label: 'Чувствительная' },
+                          { value: 'unsure', label: 'Хочу узнать' },
+                        ].map((opt) => (
+                          <label key={opt.value} className="flex items-center gap-3 cursor-pointer rounded-lg border border-input bg-white px-4 py-3 hover:bg-white/80 transition">
+                            <input
+                              type="checkbox"
+                              value={opt.value}
+                              checked={(watch('question2') ?? []).includes(opt.value)}
+                              onChange={(e) => {
+                                const current = new Set(watch('question2') ?? [])
+                                if (e.target.checked) current.add(opt.value); else current.delete(opt.value)
+                                setValue('question2', Array.from(current), { shouldValidate: true })
+                              }}
+                              className="accent-emerald-600"
+                            />
+                            <span className="text-sm font-medium">{opt.label}</span>
+                          </label>
+                        ))}
+                      </fieldset>
+                      {errors.question2 && (
+                        <p className="mt-2 text-sm text-destructive">{errors.question2.message}</p>
+                      )}
+                    </div>
+                    <div className="relative w-full h-56 sm:h-72 md:h-full rounded-xl overflow-hidden border border-white/30">
+                      <Image src="/images/product_image.jpg" alt="Sencosmetics продукт" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Вопрос 3 — беспокоит (мультивыбор + свой вариант) */}
+                {step === 3 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300">
+                    <div>
+                      <p className="block text-sm font-medium text-foreground mb-3">
+                        3. Меня беспокоит <span className="text-destructive">*</span>
+                        <span className="block text-xs text-muted-foreground">Выберете вариант или опишите свой запрос максимально подробно</span>
+                        <span className="block text-xs text-muted-foreground">Отметьте один или несколько вариантов</span>
+                      </p>
+                      <fieldset className="space-y-2">
+                        <legend className="sr-only">Запрос</legend>
+                        {[
+                          { value: 'face_acne', label: 'Акне на лице' },
+                          { value: 'body_breakouts', label: 'Высыпания на теле' },
+                          { value: 'natural_care', label: 'Хочу попробовать натуральный уход а не бренды с химией' },
+                          { value: 'other', label: 'Свой вариант' },
+                        ].map((opt) => (
+                          <label key={opt.value} className="flex items-center gap-3 cursor-pointer rounded-lg border border-input bg-white px-4 py-3 hover:bg-white/80 transition">
+                            <input
+                              type="checkbox"
+                              value={opt.value}
+                              checked={(watch('question3') ?? []).includes(opt.value)}
+                              onChange={(e) => {
+                                const current = new Set(watch('question3') ?? [])
+                                if (e.target.checked) current.add(opt.value); else current.delete(opt.value)
+                                setValue('question3', Array.from(current), { shouldValidate: true })
+                              }}
+                              className="accent-emerald-600"
+                            />
+                            <span className="text-sm font-medium">{opt.label}</span>
+                          </label>
+                        ))}
+                      </fieldset>
+                      {(watch('question3') ?? []).includes('other') && (
+                        <div className="mt-3">
+                          <label htmlFor="question3_other" className="block text-sm text-muted-foreground mb-1">Опишите свой вариант</label>
+                          <textarea id="question3_other" {...register('question3_other')} className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all" rows={3} />
+                        </div>
+                      )}
+                      {errors.question3 && (
+                        <p className="mt-2 text-sm text-destructive">{errors.question3.message}</p>
+                      )}
+                    </div>
+                    <div className="relative w-full h-56 sm:h-72 md:h-full rounded-xl overflow-hidden border border-white/30">
+                      <Image src="/images/main_image.jpg" alt="Sencosmetics продукт" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Контакты + согласие */}
+                {step === 4 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="block text-sm font-medium text-foreground mb-3">
+                        4. Как часто меняете уход?
+                        <span className="block text-xs text-muted-foreground">Чем точнее ответ, тем эффективнее мы сможем подобрать уход</span>
+                      </p>
+                      <fieldset className="space-y-2 mb-4">
+                        <legend className="sr-only">Частота смены ухода</legend>
+                        {[
+                          { value: 'brand_3y', label: 'Пользуюсь одним брендом больше 3 лет' },
+                          { value: 'brand_1y', label: 'Пользуюсь одним брендом больше 1 года' },
+                          { value: 'change_3m', label: 'Меняю уход каждые 3 месяца' },
+                          { value: 'always_new', label: 'Пробую каждый раз разное' },
+                          { value: 'other', label: 'Свой вариант' },
+                        ].map((opt) => (
+                          <label key={opt.value} className="flex items-center gap-3 cursor-pointer rounded-lg border border-input bg-white px-4 py-3 hover:bg-white/80 transition">
+                            <input type="radio" value={opt.value} {...register('question4')} className="accent-emerald-600" />
+                            <span className="text-sm font-medium">{opt.label}</span>
+                          </label>
+                        ))}
+                      </fieldset>
+                      {watch('question4') === 'other' && (
+                        <div className="mb-4">
+                          <label htmlFor="question4_other" className="block text-sm text-muted-foreground mb-1">Опишите свой вариант</label>
+                          <input id="question4_other" type="text" {...register('question4_other')} className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-primary/5 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">
+                        Оставьте контакты для связи
+                      </h3>
+
+                      {/* Имя (необяз.) */}
+                      <div className="mb-4">
+                        <label
+                          htmlFor="name"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
+                          Имя <span className="text-muted-foreground text-xs">(необязательно)</span>
+                        </label>
+                        <input
+                          {...register('name')}
+                          type="text"
+                          id="name"
+                          placeholder="Ваше имя"
+                          className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      {/* Телефон */}
+                      <div className="mb-4">
+                        <label
+                          htmlFor="phone"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
+                          Телефон <span className="text-destructive">*</span>
+                        </label>
+                        <input
+                          {...register('phone')}
+                          type="tel"
+                          id="phone"
+                          placeholder="+77XXXXXXXXX"
+                          inputMode="tel"
+                          pattern="\+77\d{9}"
+                          autoComplete="tel"
+                          onFocus={(e) => { if (!e.currentTarget.value) e.currentTarget.value = '+77' }}
+                          onChange={(e) => {
+                            const raw = e.currentTarget.value.replace(/[^\d+]/g, '')
+                            const digits = raw.startsWith('+') ? raw.slice(1) : raw
+                            let normalized = '+77'
+                            const rest = digits.replace(/^77?/, '')
+                            normalized += rest.slice(0, 9)
+                            e.currentTarget.value = normalized
+                          }}
+                          className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                        />
+                        <p className="mt-1 text-xs text-muted-foreground">Пример: +77700123456</p>
+                        {errors.phone && (
+                          <p className="mt-1 text-sm text-destructive">{errors.phone.message}</p>
+                        )}
+                      </div>
+
+                      {/* Email */}
+                      <div>
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
+                          Email <span className="text-muted-foreground text-xs">(необязательно)</span>
+                        </label>
+                        <input
+                          {...register('email')}
+                          type="email"
+                          id="email"
+                          placeholder="your@email.com"
+                          className="w-full px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                        />
+                        {/* Email необязателен */}
+                      </div>
+                    </div>
+                    <div className="relative w-full h-56 sm:h-72 md:h-full rounded-xl overflow-hidden border border-white/30">
+                      <Image src="/images/home_image.jpg" alt="Sencosmetics продукт" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" />
+                    </div>
+
+                    {/* Согласие */}
+                    <div className="md:col-span-2 flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        id="consent"
+                        {...register('consent')}
+                        className="mt-1 w-4 h-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
+                      />
+                      <label htmlFor="consent" className="text-sm text-muted-foreground">
+                        Я даю согласие на{' '}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setIsPrivacyModalOpen(true)
+                          }}
+                          className="text-primary hover:underline"
+                        >
+                          обработку персональных данных
+                        </button>
+                        {' '}в соответствии с политикой конфиденциальности
+                      </label>
+                    </div>
+                    {errors.consent && (
+                      <p className="text-sm text-destructive">{errors.consent.message}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Кнопки навигации */}
                 <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="flex-1 px-6 py-3 border border-border rounded-lg font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    className="flex-1 px-6 py-3 border border-border rounded-lg font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
                   >
                     Отмена
                   </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Отправка...' : 'Отправить'}
-                  </button>
+                  {step > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setStep((s) => Math.max(1, s - 1))}
+                      className="px-6 py-3 border border-border rounded-lg font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+                    >
+                      Назад
+                    </button>
+                  )}
+                  {step < totalSteps && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const fieldsByStep: Record<number, (keyof SurveyFormData)[]> = {
+                          1: [],
+                          2: [],
+                          3: [],
+                          4: ['phone', 'consent'],
+                        }
+                        const valid = await trigger(fieldsByStep[step])
+                        if (valid) setStep((s) => Math.min(totalSteps, s + 1))
+                      }}
+                      className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium transition-colors hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+                    >
+                      Далее
+                    </button>
+                  )}
+                  {step === totalSteps && (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="px-6 py-3 bg-emerald-600 text-white rounded-lg font-medium transition-colors hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Отправка' : 'Подобрать уход'}
+                    </button>
+                  )}
                 </div>
               </form>
             </>

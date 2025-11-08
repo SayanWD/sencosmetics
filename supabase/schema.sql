@@ -51,3 +51,35 @@ CREATE TRIGGER update_contact_submissions_updated_at
 -- Add comment to table
 COMMENT ON TABLE contact_submissions IS 'Stores contact form submissions from the landing page';
 
+-- Create newsletter_subscribers table (Phase 1: landing subscriptions)
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'pending',
+  subscribed_at TIMESTAMP WITH TIME ZONE,
+  unsubscribed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_status 
+  ON newsletter_subscribers(status);
+
+ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow anonymous inserts on newsletter_subscribers" ON newsletter_subscribers;
+DROP POLICY IF EXISTS "Allow authenticated reads on newsletter_subscribers" ON newsletter_subscribers;
+
+CREATE POLICY "Allow anonymous inserts on newsletter_subscribers" 
+  ON newsletter_subscribers 
+  FOR INSERT 
+  TO anon 
+  WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated reads on newsletter_subscribers" 
+  ON newsletter_subscribers 
+  FOR SELECT 
+  TO authenticated 
+  USING (true);
+
+COMMENT ON TABLE newsletter_subscribers IS 'Landing newsletter subscriptions with double opt-in workflow';
+

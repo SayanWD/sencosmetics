@@ -3,25 +3,23 @@
 
 export type SupportedLocale = 'kz' | 'ru';
 
-export interface TranslationDictionary {
-  [key: string]: string | TranslationDictionary;
-}
+export type TranslationDictionary = unknown;
 
 export function isSupportedLocale(locale: string): locale is SupportedLocale {
   return locale === 'kz' || locale === 'ru';
 }
 
-export async function loadCommonDictionary(locale: SupportedLocale): Promise<TranslationDictionary> {
+export async function loadCommonDictionary(locale: SupportedLocale): Promise<unknown> {
   switch (locale) {
     case 'kz':
-      return (await import('../locales/kz/common.json')).default as TranslationDictionary;
+      return (await import('../locales/kz/common.json')).default as unknown;
     case 'ru':
     default:
-      return (await import('../locales/ru/common.json')).default as TranslationDictionary;
+      return (await import('../locales/ru/common.json')).default as unknown;
   }
 }
 
-export function t(dict: TranslationDictionary, path: string, fallback: string = ''): string {
+export function t(dict: Record<string, unknown>, path: string, fallback: string = ''): string {
   const segments = path.split('.');
   let node: unknown = dict;
   for (const segment of segments) {

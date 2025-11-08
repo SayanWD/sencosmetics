@@ -71,7 +71,7 @@ export function PrivacyPolicyModal({ isOpen, onClose }: PrivacyPolicyModalProps)
               <ul className="list-disc pl-6 mb-4 space-y-1">
                 <li>Имя и контактные данные (имя, email, телефон)</li>
                 <li>Сообщения и запросы, отправленные через форму обратной связи</li>
-                <li>Ответы на вопросы опроса о требованиях к генератору</li>
+                <li>Ответы на вопросы опроса для подбора ухода</li>
                 <li>Техническая информация (IP-адрес, тип браузера, информация об устройстве)</li>
               </ul>
             </section>
@@ -81,7 +81,7 @@ export function PrivacyPolicyModal({ isOpen, onClose }: PrivacyPolicyModalProps)
               <p className="mb-3">Персональные данные обрабатываются для следующих целей:</p>
               <ul className="list-disc pl-6 mb-4 space-y-1">
                 <li>Обработка и ответ на ваши запросы</li>
-                <li>Предоставление консультаций по выбору генераторов</li>
+                <li>Предоставление рекомендаций по подбору ухода и продукции Sencosmetics</li>
                 <li>Улучшение качества сервиса</li>
                 <li>Анализ использования сайта</li>
                 <li>Соблюдение требований законодательства</li>

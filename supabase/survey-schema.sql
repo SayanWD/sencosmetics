@@ -50,5 +50,5 @@ CREATE TRIGGER update_survey_responses_updated_at
   EXECUTE FUNCTION update_survey_updated_at_column();
 
 -- Add comment to table
-COMMENT ON TABLE survey_responses IS 'Stores survey responses about generator requirements';
+COMMENT ON TABLE survey_responses IS 'Stores landing survey responses (Phase 1)';
 

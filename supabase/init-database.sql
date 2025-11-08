@@ -31,7 +31,7 @@ CREATE INDEX IF NOT EXISTS idx_contact_submissions_email
 COMMENT ON TABLE contact_submissions IS 'Stores contact form submissions from the landing page';
 
 -- ====================================================
--- 2. SURVEY RESPONSES TABLE
+-- 2. SURVEY RESPONSES TABLE (Landing questionnaire)
 -- ====================================================
 
 -- Create survey_responses table
@@ -54,7 +54,25 @@ CREATE INDEX IF NOT EXISTS idx_survey_responses_email
   ON survey_responses(email);
 
 -- Add comment to table
-COMMENT ON TABLE survey_responses IS 'Stores survey responses about generator requirements';
+COMMENT ON TABLE survey_responses IS 'Stores landing survey responses (Phase 1)';
+
+-- ====================================================
+-- 3. NEWSLETTER SUBSCRIBERS TABLE (double opt-in ready)
+-- ====================================================
+
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'pending', -- pending | subscribed | unsubscribed
+  subscribed_at TIMESTAMP WITH TIME ZONE,
+  unsubscribed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_newsletter_subscribers_status
+  ON newsletter_subscribers(status);
+
+COMMENT ON TABLE newsletter_subscribers IS 'Landing newsletter subscriptions with double opt-in workflow';
 
 -- ====================================================
 -- 3. FUNCTIONS
@@ -129,6 +147,28 @@ CREATE POLICY "Allow authenticated reads on survey_responses"
   ON survey_responses 
   FOR SELECT 
   TO authenticated 
+  USING (true);
+
+-- Enable RLS for newsletter_subscribers
+ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies to avoid conflicts on re-run
+DROP POLICY IF EXISTS "Allow anonymous inserts on newsletter_subscribers" ON newsletter_subscribers;
+DROP POLICY IF EXISTS "Allow authenticated reads on newsletter_subscribers" ON newsletter_subscribers;
+DROP POLICY IF EXISTS "Allow owner unsubscribe on newsletter_subscribers" ON newsletter_subscribers;
+
+-- Allow anonymous subscribe (insert)
+CREATE POLICY "Allow anonymous inserts on newsletter_subscribers"
+  ON newsletter_subscribers
+  FOR INSERT
+  TO anon
+  WITH CHECK (true);
+
+-- Allow authenticated reads for backoffice
+CREATE POLICY "Allow authenticated reads on newsletter_subscribers"
+  ON newsletter_subscribers
+  FOR SELECT
+  TO authenticated
   USING (true);
 
 -- ====================================================
